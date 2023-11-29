@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SalesWebMvc.App.Services;
 using SalesWebMvc.Business.Models;
+using SalesWebMvc.Business.Models.ViewModels;
 using SalesWebMvc.Data.Context;
 
 namespace SalesWebMvc.App.Controllers
@@ -9,46 +10,40 @@ namespace SalesWebMvc.App.Controllers
     public class SellersController : Controller
     {
         private readonly DataContext _context;
-        private readonly SellerService _service;
+        private readonly SellerService _sellerService;
+        private readonly DepartmentService _departmentService;
 
-        public SellersController(DataContext context, SellerService service)
+        public SellersController(DataContext context, SellerService service, DepartmentService departmentService)
         {
             _context = context;
-            _service = service;
+            _sellerService = service;
+            _departmentService = departmentService;
         }
 
         public IActionResult Index()
         {
-            var list = _service.FindAll();
+            var list = _sellerService.FindAll();
             return View(list);
         }
 
 
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null || _context.Seller == null)
-            {
-                return NotFound();
-            }
 
-            var seller = await _context.Seller
-                .FirstOrDefaultAsync(m => m.id == id);
-            if (seller == null)
-            {
-                return NotFound();
-            }
-
+            var seller = _sellerService.FindById(id);
             return View(seller);
         }
 
         public IActionResult Create()
         {
-            return View();
+            var departments = _departmentService.FindAll();
+            var viewModel = new SellerFormViewModel { Departments = departments };
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,Name,Email,BirthDate,BaseSalary")] Seller seller)
+        public async Task<IActionResult> Create(Seller seller)
         {
             if (ModelState.IsValid)
             {
@@ -59,24 +54,17 @@ namespace SalesWebMvc.App.Controllers
             return View(seller);
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null || _context.Seller == null)
-            {
-                return NotFound();
-            }
-
-            var seller = await _context.Seller.FindAsync(id);
-            if (seller == null)
-            {
-                return NotFound();
-            }
-            return View(seller);
+            var seller = _sellerService.FindById(id);
+            List<Department> department = _departmentService.FindAll();
+            SellerFormViewModel viewModel = new SellerFormViewModel { Seller = seller, Departments = department };
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,Name,Email,BirthDate,BaseSalary")] Seller seller)
+        public async Task<IActionResult> Edit(int id, Seller seller)
         {
             if (id != seller.id)
             {
@@ -106,45 +94,27 @@ namespace SalesWebMvc.App.Controllers
             return View(seller);
         }
 
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int id)
         {
-            if (id == null || _context.Seller == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return BadRequest();
 
-            var seller = await _context.Seller
-                .FirstOrDefaultAsync(m => m.id == id);
-            if (seller == null)
-            {
-                return NotFound();
-            }
-
+            var seller = _sellerService.FindById(id);
             return View(seller);
         }
 
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            if (_context.Seller == null)
-            {
-                return Problem("Entity set 'SalesWebMvcAppContext.Seller'  is null.");
-            }
-            var seller = await _context.Seller.FindAsync(id);
-            if (seller != null)
-            {
-                _context.Seller.Remove(seller);
-            }
-            
-            await _context.SaveChangesAsync();
+            if (id == null) return BadRequest();
+            _sellerService.Remove(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool SellerExists(int id)
         {
-          return _context.Seller.Any(e => e.id == id);
+            return _context.Seller.Any(e => e.id == id);
         }
     }
 }

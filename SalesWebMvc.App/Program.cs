@@ -18,7 +18,9 @@ namespace SalesWebMvc.App
 
             builder.Services.AddDbContext<DataContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             builder.Services.AddScoped<SellerService>();
+            builder.Services.AddScoped<DepartmentService>();
 
             var app = builder.Build();
 
