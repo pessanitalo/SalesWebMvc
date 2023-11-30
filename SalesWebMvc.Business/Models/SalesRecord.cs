@@ -1,8 +1,12 @@
-﻿namespace SalesWebMvc.Business.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SalesWebMvc.Business.Models
 {
     public class SalesRecord
     {
         public int id { get; set; }
+
+        [DataType(DataType.Date)]
         public DateTime Date { get; set; }
         public double Amounth { get; set; }
         public SaleStatus Status { get; set; }
