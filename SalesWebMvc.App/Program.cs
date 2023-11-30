@@ -2,6 +2,8 @@
 using SalesWebMvc.Data.Context;
 using SalesWebMvc.App.Data;
 using SalesWebMvc.App.Services;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 namespace SalesWebMvc.App
 {
@@ -13,7 +15,7 @@ namespace SalesWebMvc.App
             builder.Services.AddDbContext<SalesWebMvcAppContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SalesWebMvcAppContext") ?? throw new InvalidOperationException("Connection string 'SalesWebMvcAppContext' not found.")));
 
-            // Add services to the container.
+           
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<DataContext>(options =>
@@ -21,12 +23,22 @@ namespace SalesWebMvc.App
 
             builder.Services.AddScoped<SellerService>();
             builder.Services.AddScoped<DepartmentService>();
+            builder.Services.AddScoped<SalesRecordService>();
+            
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            var ptbr = new CultureInfo("pt-br");
+            var localization = new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture(ptbr),
+                SupportedCultures = new List<CultureInfo> { ptbr },
+                SupportedUICultures = new List<CultureInfo> { ptbr },
+            };
+
             if (!app.Environment.IsDevelopment())
             {
+                app.UseRequestLocalization(localization);
                 app.UseExceptionHandler("/Home/Error");
             }
             app.UseStaticFiles();

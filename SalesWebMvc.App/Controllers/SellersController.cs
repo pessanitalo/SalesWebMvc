@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SalesWebMvc.App.Models;
 using SalesWebMvc.App.Services;
 using SalesWebMvc.Business.Models;
 using SalesWebMvc.Business.Models.ViewModels;
 using SalesWebMvc.Data.Context;
+using System.Diagnostics;
 
 namespace SalesWebMvc.App.Controllers
 {
@@ -56,7 +58,17 @@ namespace SalesWebMvc.App.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
+            if (id == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Houve um erro" });
+            }
+
             var seller = _sellerService.FindById(id);
+
+            if (seller == null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "vendedor não encontrado" });
+            }
             List<Department> department = _departmentService.FindAll();
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = seller, Departments = department };
             return View(viewModel);
@@ -66,9 +78,9 @@ namespace SalesWebMvc.App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Seller seller)
         {
-            if (id != seller.id)
+            if (id == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Error), new { message = "Houve um erro" });
             }
 
             if (ModelState.IsValid)
@@ -82,7 +94,7 @@ namespace SalesWebMvc.App.Controllers
                 {
                     if (!SellerExists(seller.id))
                     {
-                        return NotFound();
+                        return RedirectToAction(nameof(Error), new { message = "Houve um erro" });
                     }
                     else
                     {
@@ -112,6 +124,16 @@ namespace SalesWebMvc.App.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public IActionResult Error(string message)
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            return View(viewModel);
+        }
         private bool SellerExists(int id)
         {
             return _context.Seller.Any(e => e.id == id);
