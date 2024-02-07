@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SalesWebMvc.Data.Context;
-using SalesWebMvc.App.Data;
 using SalesWebMvc.App.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
@@ -12,9 +11,6 @@ namespace SalesWebMvc.App
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<SalesWebMvcAppContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SalesWebMvcAppContext") ?? throw new InvalidOperationException("Connection string 'SalesWebMvcAppContext' not found.")));
-
            
             builder.Services.AddControllersWithViews();
 
